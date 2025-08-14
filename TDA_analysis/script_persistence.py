@@ -84,16 +84,54 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
     # Now you have a SimplexTree with higher-dimensional simplices.
     # You can compute persistence, Betti numbers, etc.
     persistence = simplex_tree.persistence()
-    gd.plot_persistence_barcode(persistence)
 
-    # plt.figure(figsize=(6, 4))
+    # code for persistence diagrams
+    # colour is different for the 2 plots
+    fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
 
-    plt.xlabel("Normalized Weight Connection")
-    plt.ylabel("Cavity order")
+    # --- Top: persistence barcode ---
+    gd.plot_persistence_barcode(persistence, axes=axes[0])
+    axes[0].set_ylabel("Homology dim")
+    axes[0].set_xlabel("")  # hide x-label for top plot
 
-    plot_filename = os.path.join(plots_folder, f'persistence_plot_{index}.png')
+    # --- Bottom: Betti curves ---
+    max_dim = max(dim for dim, _ in persistence)
+    all_times = []
+    for dim in range(max_dim + 1):
+        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
+        if len(intervals) > 0:
+            all_times.extend(intervals.flatten())
+    all_times = np.array(all_times)
+    all_times = all_times[np.isfinite(all_times)]
+    t_min, t_max = (all_times.min(), all_times.max()) if all_times.size else (0.0, 1.0)
+    grid = np.linspace(t_min, t_max, 200)
+
+    for dim in range(max_dim + 1):
+        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
+        betti_vals = [
+            np.sum((intervals[:, 0] <= t) & (intervals[:, 1] > t))
+            for t in grid
+        ]
+        axes[1].step(grid, betti_vals, where='post', label=f"β{dim}")
+
+    axes[1].set_xlabel("Filtration value")
+    axes[1].set_ylabel("Betti number")
+    axes[1].legend()
+
+    plt.tight_layout()
+    plot_filename = os.path.join(plots_folder, f'persistence_and_betti_{index}.png')
     plt.savefig(plot_filename)
-    plt.close()  # Close the figure to prevent display
+    plt.close()
+    # gd.plot_persistence_barcode(persistence)
+
+    # # plt.figure(figsize=(6, 4))
+
+    # plt.xlabel("Normalized Weight Connection")
+    # plt.ylabel("Cavity order")
+
+    # plot_filename = os.path.join(plots_folder, f'persistence_plot_{index}.png')
+    # plt.savefig(plot_filename)
+    # plt.close()  # Close the figure to prevent display
 
     df = pd.DataFrame({
       'betti_numbers': [simplex_tree.betti_numbers()], 
@@ -105,3 +143,4 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
     del simplex_tree
 
   return betti_df
+
