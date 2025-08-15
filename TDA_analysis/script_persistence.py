@@ -83,81 +83,40 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
 
     # Now you have a SimplexTree with higher-dimensional simplices.
     # You can compute persistence, Betti numbers, etc.
-    betti_colors = {
-        0: "tab:blue",
-        1: "tab:orange",
-        2: "tab:green",
-        3: "tab:red",
-        4: "tab:purple",
-        5: "tab:brown",
-        6: "tab:pink",
-        7: "tab:gray",
-        8: "tab:olive",
-        9: "tab:cyan",
-        10: "gold"
-    }
+    # betti_colors = {
+    #     0: "tab:blue",
+    #     1: "tab:orange",
+    #     2: "tab:green",
+    #     3: "tab:red",
+    #     4: "tab:purple",
+    #     5: "tab:brown",
+    #     6: "tab:pink",
+    #     7: "tab:gray",
+    #     8: "tab:olive",
+    #     9: "tab:cyan",
+    #     10: "gold"
+    # }
 
-    persistence = simplex_tree.persistence()
-    max_dim = max(dim for dim, _ in persistence)
-
-    # Prepare vertical figure: barcode on top, Betti curves below
-    fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
-
-    # --- Custom barcode plot ---
-    for dim in range(max_dim + 1):
-        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
-        color = betti_colors.get(dim, "black")
-        for idx, (birth, death) in enumerate(intervals):
-            death_plot = death if np.isfinite(death) else t_max + (t_max - t_min) * 0.05
-            axes[0].hlines(y=dim + idx * 0.1, xmin=birth, xmax=death_plot,
-                          colors=color, linewidth=2)
-    axes[0].set_ylabel("Homology dim")
-    axes[0].set_yticks(range(max_dim + 1))
-    axes[0].set_yticklabels([f"β{d}" for d in range(max_dim + 1)])
-
-    # --- Betti curves ---
-    # Get bounds for filtration axis
-    all_times = []
-    for dim in range(max_dim + 1):
-        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
-        if len(intervals) > 0:
-            all_times.extend(intervals.flatten())
-    all_times = np.array(all_times)
-    all_times = all_times[np.isfinite(all_times)]
-    t_min, t_max = (all_times.min(), all_times.max()) if all_times.size else (0.0, 1.0)
-    grid = np.linspace(t_min, t_max, 200)
-
-    for dim in range(max_dim + 1):
-        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
-        betti_vals = [
-            np.sum((intervals[:, 0] <= t) & (intervals[:, 1] > t))
-            for t in grid
-        ]
-        axes[1].step(grid, betti_vals, where='post', color=betti_colors.get(dim, "black"), label=f"β{dim}")
-
-    axes[1].set_xlabel("Filtration value")
-    axes[1].set_ylabel("Betti number")
-    axes[1].legend()
-
-    plt.tight_layout()
-    plot_filename = os.path.join(plots_folder, f'persistence_and_betti_{index}.png')
-    plt.savefig(plot_filename)
-    plt.close()
-
-    
     # persistence = simplex_tree.persistence()
+    # max_dim = max(dim for dim, _ in persistence)
 
-    # # code for persistence diagrams
-    # # colour is different for the 2 plots
+    # # Prepare vertical figure: barcode on top, Betti curves below
     # fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
 
-    # # --- Top: persistence barcode ---
-    # gd.plot_persistence_barcode(persistence, axes=axes[0])
+    # # --- Custom barcode plot ---
+    # for dim in range(max_dim + 1):
+    #     intervals = simplex_tree.persistence_intervals_in_dimension(dim)
+    #     color = betti_colors.get(dim, "black")
+    #     for idx, (birth, death) in enumerate(intervals):
+    #         death_plot = death if np.isfinite(death) else t_max + (t_max - t_min) * 0.05
+    #         axes[0].hlines(y=dim + idx * 0.1, xmin=birth, xmax=death_plot,
+    #                       colors=color, linewidth=2)
     # axes[0].set_ylabel("Homology dim")
-    # axes[0].set_xlabel("")  # hide x-label for top plot
+    # axes[0].set_yticks(range(max_dim + 1))
+    # axes[0].set_yticklabels([f"β{d}" for d in range(max_dim + 1)])
 
-    # # --- Bottom: Betti curves ---
-    # max_dim = max(dim for dim, _ in persistence)
+    # # --- Betti curves ---
+    # # Get bounds for filtration axis
     # all_times = []
     # for dim in range(max_dim + 1):
     #     intervals = simplex_tree.persistence_intervals_in_dimension(dim)
@@ -174,7 +133,7 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
     #         np.sum((intervals[:, 0] <= t) & (intervals[:, 1] > t))
     #         for t in grid
     #     ]
-    #     axes[1].step(grid, betti_vals, where='post', label=f"β{dim}")
+    #     axes[1].step(grid, betti_vals, where='post', color=betti_colors.get(dim, "black"), label=f"β{dim}")
 
     # axes[1].set_xlabel("Filtration value")
     # axes[1].set_ylabel("Betti number")
@@ -184,6 +143,51 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
     # plot_filename = os.path.join(plots_folder, f'persistence_and_betti_{index}.png')
     # plt.savefig(plot_filename)
     # plt.close()
+
+    ##### SECOND WAY 
+    
+    persistence = simplex_tree.persistence()
+
+    # code for persistence diagrams
+    # colour is different for the 2 plots
+    fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+
+    # --- Top: persistence barcode ---
+    gd.plot_persistence_barcode(persistence, axes=axes[0])
+    axes[0].set_ylabel("Homology dim")
+    axes[0].set_xlabel("")  # hide x-label for top plot
+
+    # --- Bottom: Betti curves ---
+    max_dim = max(dim for dim, _ in persistence)
+    all_times = []
+    for dim in range(max_dim + 1):
+        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
+        if len(intervals) > 0:
+            all_times.extend(intervals.flatten())
+    all_times = np.array(all_times)
+    all_times = all_times[np.isfinite(all_times)]
+    t_min, t_max = (all_times.min(), all_times.max()) if all_times.size else (0.0, 1.0)
+    grid = np.linspace(t_min, t_max, 200)
+
+    for dim in range(max_dim + 1):
+        intervals = simplex_tree.persistence_intervals_in_dimension(dim)
+        betti_vals = [
+            np.sum((intervals[:, 0] <= t) & (intervals[:, 1] > t))
+            for t in grid
+        ]
+        axes[1].step(grid, betti_vals, where='post', label=f"β{dim}")
+
+    axes[1].set_xlabel("Filtration value")
+    axes[1].set_ylabel("Betti number")
+    axes[1].legend()
+
+    plt.tight_layout()
+    plot_filename = os.path.join(plots_folder, f'persistence_and_betti_{index}.png')
+    plt.savefig(plot_filename)
+    plt.close()
+
+    #### First Code  
+    
     # # gd.plot_persistence_barcode(persistence)
 
     # # # plt.figure(figsize=(6, 4))
@@ -205,5 +209,6 @@ def create_persistence(start_index, end_index, p_cut, betti_df=None):
     del simplex_tree
 
   return betti_df
+
 
 
