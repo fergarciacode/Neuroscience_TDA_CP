@@ -10,7 +10,7 @@ A paper is being prepared.
 Jupyter Notebook: 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]
-(https://colab.research.google.com/github/fergarciacode/Neuroscience_TDA_CP/blob/main/TDA_clean.ipynb)
+(https://colab.research.google.com/github/fergarciacode/Neuroscience_TDA_CP/blob/main/  "notebookname".ipynb)
 
 
 ## How to use it 
